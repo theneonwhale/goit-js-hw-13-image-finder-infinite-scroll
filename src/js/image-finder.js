@@ -10,7 +10,7 @@ import { success, notice, error } from '@pnotify/core';
 import * as basicLightbox from 'basiclightbox';
 import 'basiclightbox/dist/basicLightbox.min.css';
 
-import InfiniteScroll from 'infinite-scroll';
+// import InfiniteScroll from 'infinite-scroll';
 
 const refs = getRefs();
 const imagesApiService = new ImagesApiService();
@@ -66,27 +66,44 @@ function clearImagesContainer() {
 }
 
 // Infinite scroll
-
-function getPath() {
-  const searchParams = new URLSearchParams({
-    image_type: 'photo',
-    orientation: 'horizontal',
-    q: this.searchQuery,
-    page: this.page,
-    per_page: 12,
-    key: this.API_KEY,
+function onEntry(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && imagesApiService.query !== '') {
+      getImages();
+      // console.log(entry + Date.now());
+    }
   });
-
-  return `${this.BASE_URL}/?${searchParams}`;
 }
 
-const infScroll = new InfiniteScroll(refs.imagesContainer, {
-  path: getPath,
-  responseType: 'text',
-  history: false,
-});
+const options = {
+  root: null,
+  rootMargin: '200px',
+  threshold: 0.5,
+};
 
-infScroll.on('load', getImages);
+const observer = new IntersectionObserver(onEntry, options);
+
+observer.observe(refs.sentinel);
+// function getPath() {
+//   const searchParams = new URLSearchParams({
+//     image_type: 'photo',
+//     orientation: 'horizontal',
+//     q: this.searchQuery,
+//     page: this.page,
+//     per_page: 12,
+//     key: this.API_KEY,
+//   });
+
+//   return `${this.BASE_URL}/?${searchParams}`;
+// }
+
+// const infScroll = new InfiniteScroll(refs.imagesContainer, {
+//   path: getPath,
+//   responseType: 'text',
+//   history: false,
+// });
+
+// infScroll.on('load', getImages);
 
 // Lightbox
 refs.imagesContainer.addEventListener('click', onOpenLightbox);
